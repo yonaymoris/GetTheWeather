@@ -72,6 +72,10 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" title="Select location" id="PjZ-hd-onH"/>
+                    <connections>
+                        <outlet property="mapView" destination="5oA-Dr-1Mp" id="eJo-TG-tIf"/>
+                        <outlet property="weatherForecastButton" destination="hT8-no-t4s" id="xCG-7N-bmt"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
