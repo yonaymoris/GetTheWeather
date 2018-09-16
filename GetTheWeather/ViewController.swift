@@ -17,6 +17,8 @@ class ViewController: UIViewController {
     let WEATHER_URL = "http://api.openweathermap.org/data/2.5/forecast"
     let APP_ID = "89779c4b7ec52f4203fbb1da32f95630"
     var weatherForecast = [WeatherDataModel]()
+    var city : String = ""
+    var country : String = ""
     
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var weatherForecastButton: UIButton!
@@ -34,6 +36,26 @@ class ViewController: UIViewController {
     }
     
     func getWeatherData(url : String, parameters : [String : String]) {
+        
+        // get the city and country from the map
+        let pinPosition = CGPoint(x: UIScreen.main.bounds.size.width*0.5,y: UIScreen.main.bounds.size.height*0.5)
+        let mapCoordinate = mapView.convert(pinPosition, toCoordinateFrom: mapView)
+        
+        let geoCoder = CLGeocoder()
+        let location = CLLocation(latitude: mapCoordinate.latitude, longitude: mapCoordinate.longitude)
+        geoCoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) -> Void in
+            // Place details
+            var placeMark: CLPlacemark!
+            placeMark = placemarks?[0]
+            if placeMark.subAdministrativeArea != nil {
+                self.city = placeMark.subAdministrativeArea!
+            }
+            
+            if placeMark.country != nil {
+                self.country = placeMark.country!
+            }
+        })
+        
         Alamofire.request(url, method : .get, parameters : parameters).responseJSON {
             response in
             if response.result.isSuccess {
@@ -57,8 +79,8 @@ class ViewController: UIViewController {
             let weather = WeatherDataModel()
             for n in 0...7 {
                 if let tempResult = json[i+n]["main"]["temp"].double {
+                    //print(json[i+n])
                     weather.temperatures.append(Int(tempResult - 273.15))
-                    weather.cities.append(json[i+n]["name"].stringValue)
                     weather.conditions.append(json[i+n]["weather"][0]["id"].intValue)
                     weather.weatherIconNames.append(weather.updateWeatherIcon(condition: weather.conditions[n]))
                     //updateUIWeatherData()
@@ -66,19 +88,20 @@ class ViewController: UIViewController {
             }
             weatherForecast.append(weather)
         }
-
-        //        for i in weatherForecast {
-        //            print(i.weatherIconNames)
-        //        }
+        
+        performSegue(withIdentifier: "segue", sender: self)
     }
     
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        if segue.identifier == "segue" {
-//            let destinationVC = segue.destination as! WeatherForecastController
-//            
-//            destinationVC.forecast = weatherForecast
-//        }
-//    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segue" {
+            let destinationVC = segue.destination as! ForecastController
+            
+            if city != "" {
+                destinationVC.city = "\(city), \(country)"
+            } else { destinationVC.city = "Your chosen area" }
+            destinationVC.forecast = weatherForecast
+        }
+    }
     
     @IBAction func weatherForecastPressed(_ sender: Any) {
         SVProgressHUD.show()
@@ -89,6 +112,7 @@ class ViewController: UIViewController {
         
         let params : [String : String] = ["lat" : latitude, "lon": longitude, "appid" : APP_ID]
         getWeatherData(url : WEATHER_URL, parameters : params)
+        
         SVProgressHUD.dismiss()
     }
     

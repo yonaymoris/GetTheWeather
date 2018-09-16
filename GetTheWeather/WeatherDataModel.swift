@@ -13,7 +13,6 @@ class WeatherDataModel {
     //Declare your model variables here
     var temperatures : [Int] = []
     var conditions : [Int] = []
-    var cities : [String] = []
     var weatherIconNames : [String] = []
     
     //This method turns a condition code into the name of the weather condition image
